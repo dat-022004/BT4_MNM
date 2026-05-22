@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb_db
+    restart: always
+    environment:
+      TZ: "Asia/Ho_Chi_Minh"
+      MARIADB_ROOT_PASSWORD: 2004
+      MARIADB_DATABASE: wordpress_db
+      MARIADB_USER: admin
+      MARIADB_PASSWORD: 2004
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: pma
+    restart: always
+    environment:
+      PMA_HOST: mariadb
+      PMA_ARBITRARY: 1
+
+  wordpress:
+    image: wordpress:latest
+    container_name: wp_app
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: mariadb
+      WORDPRESS_DB_NAME: wordpress_db
+      WORDPRESS_DB_USER: admin
+      WORDPRESS_DB_PASSWORD: 2004
+    depends_on:
+      - mariadb
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared_tunnel
+    restart: always
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=eyJhIjoiZmM5YWJiYWI0NzAyY2FmZjYwMmY1ZWU1MmJiYmY2ODYiLCJ0IjoiZGQ1Mjg0MTQtYTZkYS00NGZlLWIzM2EtMzcyZGNkOTRjYzY3IiwicyI6IllXUm1ZV00yWm1FdFpUY3dOQzAwTlRVMUxXSmpNakl0T0dFMVptUmhORGcwWm1KaiJ9
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n_app
+    restart: always
+    environment:
+      - WEBHOOK_URL=https://n8n.dangdinhdat.id.vn
+    ports:
+      - "5678:5678"
